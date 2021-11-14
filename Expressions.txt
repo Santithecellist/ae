@@ -1,0 +1,282 @@
+Ease fade
+Opacity: ease(time, inPoint, inPoint + 1, 0, value);
+ 
+Fade in & Fade out
+Opacity: fade = 1;
+fadeIn = (time - inPoint) / fade;
+fadeOut = (outPoint - time) / fade;
+if (time < inPoint + fade) { ease(fadeIn, 0, 1) * value }
+else if (time > outPoint - fade) { ease(fadeOut, 0, 1) * value }
+else { value }
+ 
+Opacity Fade based on Length
+Opacity: startFade = Number; endFade = Number;
+ref = ....toWorld([0,0,0]);
+pos = toWorld(anchorPoint);
+dist = length(ref, pos);
+ease(dist, startFade, endFade, 100, 0)
+ 
+ 
+Simple blink
+Opacity: var sec = Math.round(time); (sec % 2 == 0) ? 'Even' : 'Odd';
+ 
+Blinking text cursor
+Source Text: src = Slider;
+blink = Math.round(time % 1);
+pipe = "";
+if ((blink == 1) || (src.speed > 0)) { pipe = "|" }
+substr(0,src) + pipe
+
+
+Steadicam wiggle
+Camera Position: wiggle(1, 10, 2, 0.25);
+ 
+Slowly speed up
+Evolution: value * (time * time);
+ 
+Simple delay
+thisComp.layer(layerName).transform.property.valueAtTime(time - 1);
+ 
+Text background auto-size
+Size: pad = 80;
+src = thisComp.layer("asdfsfsf");
+box = src.sourceRectAtTime(time - src.inPoint);
+[box.width + pad, box.height + pad]
+ 
+Fixed dashes around cricle stroke
+Dash: src = Slider;
+rad = content(Layer).content(Path).size[0] / 2;
+gap = content(Layer).content(Path).dash.gap;
+seg = src <= 0 ? 1 : src;
+2 * Math.PI * rad / seg - gap
+Offset: content(Layer).content(Path).dash.dash / 2
+ 
+Current Date
+Source Text: d = new Date(Date(0));
+day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+date = d.getMonth() + 1 + "/" + d.getDate() + "/" + d.getFullYear();
+day[d.getDay()] + ", " + date
+ 
+Frame utils
+var fd = thisComp.frameDuration;
+var frameRate = 1 / fd;
+var frameCount = time / fd;
+frameCount % frameRate;
+ 
+Countdown
+totalMin = 30;
+converted = totalMin*60;  
+reversed = converted - time;  
+theFinalCountdown = timeToTimecode(reversed);  
+theFinalCountdown
+
+Triggers Using Markers
+Time remap: src = comp(name).layer("Markers");
+n = 0;
+if (marker.numKeys > 0) {
+  n = marker.nearestKey(time).index;
+  if (marker.key(n).time > time) {
+    n--;
+  }
+}
+if (n == 0) {
+  0
+} else {
+  m = marker.key(n);
+  myComment = m.comment;
+  t = time - m.time;
+  try {
+    mark = src.marker.key(myComment);
+    if (src.marker.numKeys > mark.index) {
+      tMax = src.marker.key(mark.index + 1).time - mark.time;
+    } else {
+      tMax = src.outPoint - mark.time;
+    }
+    t = Math.min(t, tMax);
+    mark.time + t;
+  } catch (err) {
+    0
+  }
+}
+ 
+Realistic date counter
+Source text: var date = new Date(2020, 0);
+var timer = time / thisComp.frameDuration;
+date.setDate(timer + 1);
+(date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+
+Exponential scale
+Scale: if (num_keys >1 && key(num_keys).time > time && key(1).time <= time){
+     k = nearest_key(time).index;
+     if (key(k).time <= time) {
+     a = k;
+} else {
+     a = k-1;
+}
+     b= a+1;
+     a_val = key(a)[0];
+     b_val = key(b)[0];
+     a_time = key(a).time;
+     b_time = key(b).time;
+     if(a_val == 0) {
+         a_val = .1;
+     }
+     if (b_val == 0) {
+         b_val = .1;
+     }
+     x = Math.log(b_val) / Math.log(a_val);
+     exp = linear(time, a_time, b_time, 1, x);
+     val = Math.pow(a_val, exp);
+     [val, val];
+
+}else{
+     value;
+}
+ 
+Maintain relative size of the 3D layer while changing its Z position
+Scale: cam = thisComp.activeCamera;
+distance = length(sub(position, cam.position));
+scale * distance / cam.zoom;
+ 
+External expression from text layer
+Property: eval(thisComp.layer().text.sourceText.value)
+
+Stretch & Squatch based on speed
+Scale: var sS = position.speed, sX = value[0], sY = value[1], extra = 25;
+tempX = linear(sS, 0, 3390, sX, sX + extra);
+tempY = linear(sS, 0, 3390, sY, sY - extra);
+[tempX, tempY]
+ 
+Clamp position based on rectangle
+Position: var minX = thisComp.layer().sourceRectAtTime().left + 1920/2, minY = thisComp.layer().sourceRectAtTime().top + 1080/2;
+var maxX = thisComp.layer().content("Rectangle 1").content("Rectangle Path 1").size[0], srcY = thisComp.layer("BG").content("Rectangle 1").content("Rectangle Path 1").size[1], shapeSize = content("Ellipse 1").content("Ellipse Path 1").size[0];
+var tempX = linear(maxX, 0, 1920, 1920/2, 1920), tempY = linear(maxY, 0, 1080, 1080/2, 1080);
+clamp(transform.position, [minX + shapeSize/2, minY + shapeSize/2], [maxX - shapeSize/2, maxY - shapeSize/2])
+ 
+Map colors from Adjustment Layer
+Color: targetLayer = thisComp.layer("Adjustment Layer 1");
+samplePoint = position;
+sampleRadius = [1,1];
+targetLayer.sampleImage(samplePoint, sampleRadius)
+ 
+Wiggle loop
+Property: freq = 1;
+amp = 110;
+loopTime = thisComp.duration;
+t = time % loopTime;
+wiggle1 = wiggle(freq, amp, 1, 0.5, t);
+wiggle2 = wiggle(freq, amp, 1, 0.5, t - loopTime);
+linear(t, 0,  loopTime, wiggle1, wiggle2)
+ 
+smooth()
+temporalWiggle()
+ 
+Loop all
+if(numKeys > 0) {
+	if(time(key(1).time) {loopIn();} else {loopOut();
+} else {value;};
+ 
+Path loop
+// if you don't need pingpong - false
+pingPong = false;
+try{
+  // start - first keyframe
+  timeStart = thisProperty.key(1).time; 
+  // count duration
+  duration = thisProperty.key(thisProperty.numKeys).time - timeStart; 
+  // cycle number
+  quant = Math.floor((time - timeStart) / duration); 
+  if (quant < 0) quant = 0 // != 0
+  if (quant % 2 == 1 && pingPong == true){ 
+    t = 2 * timeStart + (quant+1) * duration - time; 
+  } else { 
+    t = time-quant*duration;
+  }
+} catch(e) {
+  t = time;
+}
+thisProperty.valueAtTime(t);
+
+
+Inertia bounce
+amp = .04;
+freq = 4.0;
+decay = 5.5;
+n = 0;
+if (numKeys > 0){
+n = nearestKey(time).index;
+if (key(n).time > time){
+n--;
+}}
+if (n == 0){ t = 0;
+}else{
+t = time - key(n).time;
+}
+if (n > 0 && t < 1){
+v = velocityAtTime(key(n).time - thisComp.frameDuration/10);
+value + v*amp*Math.sin(freq*t*2*Math.PI)/Math.exp(decay*t);
+}else{
+value
+}
+
+Dynamic parenting
+var fadeCtrlLyr = effect("Fade Control Layer")(1);
+var total = 0, totalWeight = 0, remWeight = 0;
+
+function addTarget(name){
+ var lyr = effect("Target "+name)(1), pos = lyr.toWorld(lyr.anchorPoint);
+ var fade = fadeCtrlLyr.effect("Fade "+name)(1);
+ if (hasParent) pos = parent.fromComp(pos);
+  total+=fade*pos;
+ totalWeight+=fade;
+ remWeight = 1-totalWeight;
+
+}
+
+addTarget("A");
+addTarget("B");
+addTarget("C");
+addTarget("D");
+addTarget("E");
+
+totalWeight==0 ? value : linear(remWeight,total/totalWeight,value);
+ 
+
+Math.sin
+vel = 300;
+amp = thisComp.height*0.05;
+freq = 1.5;
+circ = 2*Math.PI;
+wave = Math.sin(freq*time*circ);
+
+x = time*vel;
+y = amp*time*wave + thisComp.height/2;
+
+[x, y]
+
+Pendulo
+posX:
+(Math.sin(time*5)*250)+(thisComp.width/2)-500
+posY:
+(Math.cos(time*10)*100)+(thisComp.height/2)
+
+Infinito
+posX:
+(Math.sin(time*5)*250)+(thisComp.width/2)
+posY:
+(Math.sin(time*10)*100)+(thisComp.height/2)
+ 
+Blinking eye
+ctrl = thisComp.layer("C | Slider");
+x = ctrl.transform.position[0];
+c = ctrl.effect("Slider")(3).value/100*20;
+h = ctrl.effect("Slider")(8).value+c;
+h = h-c;
+h = h/2;
+linear(x,-h,h,-100,100);
+ 
+Random moments of a comp
+Time remap:
+posterizeTime(4);
+r = Math.floor(random(0,6));
+framesToTime(r)
